@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Spender Market</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF6ED;
+  --ink:#2B2420;
+  --ink-soft:#6B5F50;
+  --orange:#E8791A;
+  --orange-dark:#C2620F;
+  --teal:#1F6F6B;
+  --teal-dark:#164F4C;
+  --gold:#D4A017;
+  --need:#3F9463;
+  --need-bg:#E4F3EA;
+  --want:#E85D4E;
+  --want-bg:#FCE7E4;
+  --card:#FFFFFF;
+  --border:#E4D9C4;
+  --purple:#7A5FB0;
+  --purple-bg:#EFE9F7;
+  --shadow: 0 4px 14px rgba(43,36,32,0.10);
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'Nunito',sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:840px;margin:0 auto;padding:0 0 60px;}
+
+.bunting{
+  height:26px;
+  background:repeating-linear-gradient(135deg,var(--orange) 0 18px,var(--teal) 18px 36px);
+  clip-path: polygon(
+    0% 0%, 100% 0%, 100% 60%,
+    97% 100%, 94% 60%, 91% 100%, 88% 60%, 85% 100%, 82% 60%, 79% 100%, 76% 60%, 73% 100%, 70% 60%,
+    67% 100%, 64% 60%, 61% 100%, 58% 60%, 55% 100%, 52% 60%, 49% 100%, 46% 60%, 43% 100%, 40% 60%,
+    37% 100%, 34% 60%, 31% 100%, 28% 60%, 25% 100%, 22% 60%, 19% 100%, 16% 60%, 13% 100%, 10% 60%,
+    7% 100%, 4% 60%, 1% 100%, 0% 60%
+  );
+}
+header{background:var(--teal-dark);color:#fff;padding:22px 20px 26px;text-align:center;}
+header h1{font-family:'Baloo 2',sans-serif;font-size:1.9rem;margin:0 0 4px;letter-spacing:.3px;}
+header .sub{font-size:.95rem;color:#CFE7E4;font-weight:700;}
+header .sub .kr{color:#FFD98E;} header .sub .jp{color:#FFB199;}
+.fullscreen-link{display:inline-block;margin-top:10px;background:var(--gold);color:#3A2A00;font-weight:800;font-size:.8rem;padding:6px 14px;border-radius:20px;text-decoration:none;}
+
+.diff-flag{
+  display:inline-block;
+  margin-top:8px;
+  background:var(--purple);
+  color:#fff;
+  font-size:.72rem;
+  font-weight:800;
+  padding:4px 12px;
+  border-radius:14px;
+}
+
+.progress{display:flex;justify-content:center;gap:10px;margin:18px 0 6px;flex-wrap:wrap;}
+.stall{width:64px;padding:6px 4px;border-radius:10px;background:#fff;border:2px solid var(--border);text-align:center;font-size:.68rem;font-weight:800;color:var(--ink-soft);}
+.stall .icon{font-size:1.2rem;display:block;}
+.stall.active{border-color:var(--orange);background:#FFF3E6;color:var(--orange-dark);}
+.stall.done{border-color:var(--need);background:var(--need-bg);color:var(--need);}
+
+main{padding:10px 18px 0;}
+.stage{display:none;}
+.stage.active{display:block;animation:fadein .35s ease;}
+@keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+.card-panel{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:18px;}
+h2.stage-title{font-family:'Baloo 2',sans-serif;color:var(--teal-dark);font-size:1.35rem;margin:6px 0 4px;}
+p.instructions{color:var(--ink-soft);font-size:.95rem;margin:0 0 16px;line-height:1.5;}
+.target-vocab{color:var(--orange-dark);font-weight:800;background:#FFF0DC;padding:1px 6px;border-radius:6px;}
+.speaker{border:none;background:none;cursor:pointer;font-size:1rem;vertical-align:middle;margin-left:2px;opacity:.75;}
+.speaker:hover{opacity:1;}
+
+/* Difficulty picker */
+.diff-grid{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;}
+.diff-card{
+  flex:1;min-width:220px;
+  border:3px solid var(--border);
+  border-radius:16px;
+  padding:18px;
+  text-align:center;
+  cursor:pointer;
+  background:#fff;
+  transition:transform .15s, border-color .15s;
+}
+.diff-card:hover{transform:translateY(-3px);}
+.diff-card .emoji{font-size:2.2rem;}
+.diff-card h3{font-family:'Baloo 2';margin:8px 0 4px;color:var(--teal-dark);}
+.diff-card p{font-size:.82rem;color:var(--ink-soft);margin:0;}
+.diff-card.foundation:hover{border-color:var(--need);}
+.diff-card.challenge:hover{border-color:var(--purple);}
+
+/* Stage 1 vocab */
+.vocab-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;}
+.vocab-card{border:2px solid var(--border);border-radius:14px;padding:12px 10px;text-align:center;background:#fff;cursor:pointer;transition:transform .15s, border-color .15s;user-select:none;}
+.vocab-card:hover{transform:translateY(-2px);}
+.vocab-card.learned{border-color:var(--need);background:var(--need-bg);}
+.vocab-card .emoji{font-size:1.7rem;display:block;margin-bottom:4px;}
+.vocab-card .en{font-weight:800;color:var(--orange-dark);font-size:1rem;}
+.vocab-card .kr,.vocab-card .jp{font-size:.8rem;color:var(--ink-soft);margin-top:2px;display:none;}
+.vocab-card.flipped .kr,.vocab-card.flipped .jp{display:block;}
+.vocab-card .hint{font-size:.7rem;color:#b3a690;margin-top:6px;}
+.vocab-card.flipped .hint{display:none;}
+
+/* Stage 2 sort */
+.sort-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:18px;}
+.item-card{border:2px solid var(--border);border-radius:14px;padding:10px;text-align:center;background:#fff;transition:opacity .2s, transform .2s;}
+.item-card.gone{opacity:0;transform:scale(.6);pointer-events:none;}
+.item-card .emoji{font-size:1.6rem;}
+.item-card .label{font-weight:700;font-size:.85rem;margin:4px 0 4px;}
+.item-card .context{font-size:.72rem;color:var(--ink-soft);margin-bottom:8px;min-height:28px;}
+.item-card .btns{display:flex;gap:4px;}
+.item-card button{flex:1;border:none;border-radius:8px;padding:5px 2px;font-size:.72rem;font-weight:800;cursor:pointer;color:#fff;}
+.btn-need{background:var(--need);}
+.btn-want{background:var(--want);}
+.bins{display:flex;gap:14px;flex-wrap:wrap;}
+.bin{flex:1;min-width:220px;border-radius:14px;padding:12px;min-height:70px;}
+.bin.need-bin{background:var(--need-bg);border:2px dashed var(--need);}
+.bin.want-bin{background:var(--want-bg);border:2px dashed var(--want);}
+.bin h3{margin:0 0 8px;font-family:'Baloo 2';font-size:1rem;}
+.bin.need-bin h3{color:var(--need);}
+.bin.want-bin h3{color:var(--want);}
+.bin-items{display:flex;flex-wrap:wrap;gap:6px;font-size:1.3rem;}
+.bin-items span.wrong{filter:grayscale(40%);outline:2px solid var(--want);border-radius:6px;}
+.bin-items span.right{outline:2px solid var(--need);border-radius:6px;}
+.feedback-msg{margin-top:12px;font-weight:800;font-size:.9rem;padding:8px 12px;border-radius:10px;display:none;}
+.feedback-msg.show{display:block;}
+.feedback-msg.good{background:var(--need-bg);color:var(--need);}
+.feedback-msg.bad{background:var(--want-bg);color:var(--want);}
+
+/* Stage 3 budget */
+.context-box{background:var(--purple-bg);border-left:4px solid var(--purple);padding:10px 14px;border-radius:8px;font-size:.88rem;margin-bottom:14px;}
+.wallet-bar{display:flex;align-items:center;justify-content:space-between;background:var(--teal-dark);color:#fff;border-radius:14px;padding:12px 16px;margin-bottom:16px;font-family:'Baloo 2';}
+.wallet-bar .amt{font-size:1.3rem;}
+.wallet-bar .amt span{color:var(--gold);}
+.meter{height:14px;background:#0F3A38;border-radius:8px;overflow:hidden;flex:1;margin:0 14px;}
+.meter-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--orange));width:0%;transition:width .3s;}
+.shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;}
+.shop-card{border:2px solid var(--border);border-radius:14px;padding:10px;text-align:center;background:#fff;}
+.shop-card .emoji{font-size:1.7rem;}
+.shop-card .label{font-weight:800;font-size:.85rem;margin:4px 0 2px;}
+.shop-card .price{color:var(--gold);font-weight:800;font-size:.9rem;margin-bottom:2px;}
+.shop-card .was{color:#b3a690;text-decoration:line-through;font-size:.72rem;margin-right:4px;}
+.shop-card .discount-tag{display:block;color:var(--purple);font-size:.68rem;font-weight:800;margin-bottom:6px;}
+.shop-card button{width:100%;border:none;border-radius:8px;padding:6px;font-weight:800;cursor:pointer;background:var(--orange);color:#fff;font-size:.8rem;}
+.shop-card.added button{background:var(--ink-soft);}
+.shop-card button:disabled{opacity:.5;cursor:not-allowed;}
+.checkout-btn{margin-top:16px;background:var(--teal);color:#fff;border:none;padding:12px 20px;border-radius:30px;font-weight:800;font-size:1rem;cursor:pointer;font-family:'Baloo 2';}
+.checkout-btn:disabled{opacity:.5;cursor:not-allowed;}
+.reflection{margin-top:16px;}
+.reflection label{font-weight:800;font-size:.85rem;color:var(--purple);display:block;margin-bottom:6px;}
+.reflection textarea{width:100%;border:2px solid var(--border);border-radius:10px;padding:10px;font-family:'Nunito';font-size:.88rem;resize:vertical;min-height:60px;}
+
+/* Stage 4 value for money */
+.vfm-q{margin-bottom:24px;}
+.vfm-q .qtitle{font-weight:800;margin-bottom:10px;}
+.vfm-options{display:flex;gap:12px;flex-wrap:wrap;}
+.vfm-opt{flex:1;min-width:170px;border:2px solid var(--border);border-radius:14px;padding:14px;cursor:pointer;background:#fff;text-align:center;}
+.vfm-opt:hover{border-color:var(--orange);}
+.vfm-opt .emoji{font-size:1.8rem;}
+.vfm-opt .desc{font-weight:700;font-size:.85rem;margin-top:6px;}
+.vfm-opt.correct{border-color:var(--need);background:var(--need-bg);}
+.vfm-opt.wrong{border-color:var(--want);background:var(--want-bg);}
+.vfm-explain{display:none;margin-top:10px;background:#FFF8ED;border-left:4px solid var(--gold);padding:10px 12px;border-radius:8px;font-size:.88rem;}
+.vfm-explain.show{display:block;}
+
+.stars{font-size:1.4rem;letter-spacing:3px;color:#DDD3C0;}
+.stars .lit{color:var(--gold);}
+
+.nav-row{display:flex;justify-content:space-between;margin-top:20px;}
+.nav-btn{border:none;padding:12px 26px;border-radius:30px;font-weight:800;font-size:.95rem;cursor:pointer;font-family:'Baloo 2';}
+.nav-btn.next{background:var(--orange);color:#fff;}
+.nav-btn.next:disabled{background:#e9d9c2;color:#b3a690;cursor:not-allowed;}
+.nav-btn.back{background:none;color:var(--teal-dark);border:2px solid var(--border);}
+
+.cert{background:#fff;border:3px solid var(--gold);border-radius:18px;padding:26px;text-align:center;}
+.cert h2{font-family:'Baloo 2';color:var(--teal-dark);font-size:1.5rem;margin-top:0;}
+.cert input{font-family:'Baloo 2';font-size:1.2rem;text-align:center;border:none;border-bottom:3px dotted var(--orange);color:var(--orange-dark);background:none;width:70%;margin:8px 0 18px;padding:4px;}
+.cert-row{display:flex;justify-content:space-around;flex-wrap:wrap;gap:14px;margin:16px 0;}
+.cert-item{font-size:.85rem;font-weight:700;color:var(--ink-soft);}
+.cert-item .stars{display:block;margin-top:2px;}
+.badge{display:inline-block;margin:14px 0;padding:10px 22px;border-radius:30px;background:var(--teal-dark);color:#FFD98E;font-family:'Baloo 2';font-size:1.1rem;}
+.print-btn{margin-top:10px;background:var(--teal);color:#fff;border:none;padding:10px 22px;border-radius:24px;font-weight:800;cursor:pointer;}
+@media print{header,.progress,.nav-row,.print-btn,.fullscreen-link{display:none !important;}}
+</style>
+</head>
+<body>
+
+<div class="bunting"></div>
+<header>
+  <h1>🛒 Smart Spender Market</h1>
+  <div class="sub">현명한 소비자 시장 <span class="kr">|</span> 賢い消費者マーケット <span class="jp"></span></div>
+  <a class="fullscreen-link" href="#" target="_blank" onclick="this.href=window.location.href;">🔊 Open full screen for sound</a>
+  <div class="diff-flag" id="diffFlag" style="display:none;"></div>
+</header>
+
+<div class="wrap">
+  <div class="progress" id="progressBar"></div>
+
+  <main>
+
+    <!-- INTRO + DIFFICULTY -->
+    <section class="stage active" data-stage="0">
+      <div class="card-panel">
+        <h2 class="stage-title">Welcome, Smart Spender! 환영합니다 / ようこそ</h2>
+        <p class="instructions">
+          Today you will learn to be a <span class="target-vocab">wise</span> spender.
+          You will learn new words, sort <span class="target-vocab">needs</span> and
+          <span class="target-vocab">wants</span>, spend a <span class="target-vocab">budget</span>
+          at the market, and compare <span class="target-vocab">value for money</span>.
+        </p>
+        <div class="diff-grid">
+          <div class="diff-card foundation" onclick="selectDifficulty('foundation')">
+            <span class="emoji">🌱</span>
+            <h3>Foundation</h3>
+            <p>Clear categories, guided feedback, and a chance to try again.</p>
+          </div>
+          <div class="diff-card challenge" onclick="selectDifficulty('challenge')">
+            <span class="emoji">🚀</span>
+            <h3>Challenge (MA/HA)</h3>
+            <p>Real-life scenarios, unit prices and discounts, one shot to make the right choice, and a reasoning task.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STAGE 1: VOCAB -->
+    <section class="stage" data-stage="1">
+      <div class="card-panel">
+        <h2 class="stage-title">Stall 1: Word Market 단어 시장 / 単語マーケット</h2>
+        <p class="instructions">Tap each card to reveal the Korean and Japanese words. Listen with 🔊, then tap again to mark it as learned.</p>
+        <div class="vocab-grid" id="vocabGrid"></div>
+      </div>
+      <div class="nav-row">
+        <button class="nav-btn back" onclick="goTo(0)">&larr; Back</button>
+        <button class="nav-btn next" id="s1next" onclick="goTo(2)" disabled>Next &rarr;</button>
+      </div>
+    </section>
+
+    <!-- STAGE 2: SORT -->
+    <section class="stage" data-stage="2">
+      <div class="card-panel">
+        <h2 class="stage-title">Stall 2: Need or Want? 필요 vs 원함 / 必要 vs 欲しい</h2>
+        <p class="instructions" id="s2instructions">
+          Look at each item. Decide: is it a <span class="target-vocab">need</span> (something you must have)
+          or a <span class="target-vocab">want</span> (something nice to have)?
+        </p>
+        <div class="sort-grid" id="sortGrid"></div>
+        <div class="bins">
+          <div class="bin need-bin"><h3>✅ Need 필요한 것 / 必要なもの</h3><div class="bin-items" id="needBin"></div></div>
+          <div class="bin want-bin"><h3>💛 Want 원하는 것 / 欲しいもの</h3><div class="bin-items" id="wantBin"></div></div>
+        </div>
+        <div class="feedback-msg" id="s2feedback"></div>
+      </div>
+      <div class="nav-row">
+        <button class="nav-btn back" onclick="goTo(1)">&larr; Back</button>
+        <button class="nav-btn next" id="s2next" onclick="goTo(3)" disabled>Next &rarr;</button>
+      </div>
+    </section>
+
+    <!-- STAGE 3: BUDGET -->
+    <section class="stage" data-stage="3">
+      <div class="card-panel">
+        <h2 class="stage-title">Stall 3: Budget Challenge 예산 도전 / 予算チャレンジ</h2>
+        <p class="instructions" id="s3instructions"></p>
+        <div class="context-box" id="s3context" style="display:none;"></div>
+        <div class="wallet-bar">
+          <div>💰 <span class="amt">Spent: <span id="spentAmt">0</span> / <span id="budgetTotal">20</span></span></div>
+          <div class="meter"><div class="meter-fill" id="meterFill"></div></div>
+          <div class="amt">Left: <span id="leftAmt">20</span></div>
+        </div>
+        <div class="shop-grid" id="shopGrid"></div>
+        <div class="reflection" id="reflectionBox" style="display:none;">
+          <label>💭 Opportunity cost 기회비용 / 機会費用: What did you decide NOT to buy, and why?</label>
+          <textarea id="reflectionText" placeholder="Type your answer here..."></textarea>
+        </div>
+        <div style="text-align:center;">
+          <button class="checkout-btn" id="checkoutBtn" onclick="checkout()" disabled>🧾 Checkout</button>
+        </div>
+        <div class="feedback-msg" id="s3feedback"></div>
+      </div>
+      <div class="nav-row">
+        <button class="nav-btn back" onclick="goTo(2)">&larr; Back</button>
+        <button class="nav-btn next" id="s3next" onclick="goTo(4)" disabled>Next &rarr;</button>
+      </div>
+    </section>
+
+    <!-- STAGE 4: VALUE FOR MONEY -->
+    <section class="stage" data-stage="4">
+      <div class="card-panel">
+        <h2 class="stage-title">Stall 4: Best Value 가성비 / コスパ</h2>
+        <p class="instructions">
+          <span class="target-vocab">Compare</span> the choices. Which one is better
+          <span class="target-vocab">value for money</span>?
+        </p>
+        <div id="vfmContainer"></div>
+      </div>
+      <div class="nav-row">
+        <button class="nav-btn back" onclick="goTo(3)">&larr; Back</button>
+        <button class="nav-btn next" id="s4next" onclick="goTo(5)" disabled>See Certificate &rarr;</button>
+      </div>
+    </section>
+
+    <!-- CERTIFICATE -->
+    <section class="stage" data-stage="5">
+      <div class="cert">
+        <h2>🏅 Smart Spender Certificate</h2>
+        <div>이름 / 名前 / Name:</div>
+        <input type="text" id="studentName" placeholder="Type your name">
+        <div class="cert-row" id="certRow"></div>
+        <div class="badge" id="certBadge">Smart Spender</div>
+        <div><button class="print-btn" onclick="window.print()">🖨️ Print Certificate</button></div>
+      </div>
+      <div class="nav-row">
+        <button class="nav-btn back" onclick="goTo(4)">&larr; Back</button>
+        <div></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+/* ---------- Speech ---------- */
+function speak(text, lang){
+  try{
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang; u.rate = 0.9;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* ---------- State ---------- */
+let difficulty = 'foundation';
+const stageNames = [
+  {icon:'🏪',label:'Start'},{icon:'📖',label:'Words'},{icon:'🧺',label:'Sort'},
+  {icon:'💰',label:'Budget'},{icon:'🧾',label:'Value'},{icon:'🏅',label:'Done'}
+];
+let currentStage = 0;
+let completed = [false,false,false,false,false,false];
+
+function renderProgress(){
+  const bar = document.getElementById('progressBar');
+  bar.innerHTML = '';
+  stageNames.forEach((s,i)=>{
+    const div = document.createElement('div');
+    div.className = 'stall' + (i===currentStage?' active':'') + (completed[i]&&i!==currentStage?' done':'');
+    div.innerHTML = `<span class="icon">${s.icon}</span>${s.label}`;
+    bar.appendChild(div);
+  });
+}
+function goTo(stage){
+  completed[currentStage] = true;
+  document.querySelectorAll('.stage').forEach(s=>s.classList.remove('active'));
+  document.querySelector(`.stage[data-stage="${stage}"]`).classList.add('active');
+  currentStage = stage;
+  renderProgress();
+  if(stage===5) buildCertificate();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function selectDifficulty(level){
+  difficulty = level;
+  const flag = document.getElementById('diffFlag');
+  flag.style.display = 'inline-block';
+  flag.textContent = level==='foundation' ? '🌱 Foundation Mode' : '🚀 Challenge Mode (MA/HA)';
+  buildVocab();
+  buildSort();
+  buildBudget();
+  buildVfm();
+  goTo(1);
+}
+
+/* ================= STAGE 1: VOCAB ================= */
+const vocabBase = [
+  {emoji:'🎯',en:'need',kr:'필요한 것',jp:'必要なもの'},
+  {emoji:'💛',en:'want',kr:'원하는 것',jp:'欲しいもの'},
+  {emoji:'💸',en:'spend',kr:'쓰다',jp:'使う'},
+  {emoji:'🐷',en:'save',kr:'저축하다',jp:'貯金する'},
+  {emoji:'📋',en:'budget',kr:'예산',jp:'予算'},
+  {emoji:'🏷️',en:'price',kr:'가격',jp:'値段'},
+  {emoji:'👛',en:'afford',kr:'살 여유가 있다',jp:'買う余裕がある'},
+  {emoji:'✅',en:'choose',kr:'선택하다',jp:'選ぶ'},
+  {emoji:'⚖️',en:'compare',kr:'비교하다',jp:'比較する'},
+  {emoji:'🧠',en:'wise',kr:'현명한',jp:'賢い'}
+];
+const vocabChallengeExtra = [
+  {emoji:'🔻',en:'discount',kr:'할인',jp:'割引'},
+  {emoji:'📐',en:'unit price',kr:'단가',jp:'単価'},
+  {emoji:'🔄',en:'opportunity cost',kr:'기회비용',jp:'機会費用'},
+  {emoji:'💯',en:'value for money',kr:'가성비',jp:'コスパ'}
+];
+let learnedCount = 0;
+function buildVocab(){
+  const grid = document.getElementById('vocabGrid');
+  grid.innerHTML = '';
+  learnedCount = 0;
+  document.getElementById('s1next').disabled = true;
+  const list = difficulty==='challenge' ? vocabBase.concat(vocabChallengeExtra) : vocabBase;
+  list.forEach((v,i)=>{
+    const card = document.createElement('div');
+    card.className = 'vocab-card';
+    card.innerHTML = `
+      <span class="emoji">${v.emoji}</span>
+      <div class="en">${v.en} <button class="speaker" onclick="event.stopPropagation();speak('${v.en}','en-US')">🔊</button></div>
+      <div class="kr">${v.kr} <button class="speaker" onclick="event.stopPropagation();speak('${v.kr}','ko-KR')">🔊</button></div>
+      <div class="jp">${v.jp} <button class="speaker" onclick="event.stopPropagation();speak('${v.jp}','ja-JP')">🔊</button></div>
+      <div class="hint">Tap to reveal</div>`;
+    card.onclick = ()=>{
+      if(!card.classList.contains('flipped')){
+        card.classList.add('flipped'); speak(v.en,'en-US');
+      } else if(!card.classList.contains('learned')){
+        card.classList.add('learned'); learnedCount++;
+        if(learnedCount===list.length) document.getElementById('s1next').disabled=false;
+      }
+    };
+    grid.appendChild(card);
+  });
+}
+
+/* ================= STAGE 2: SORT ================= */
+const sortFoundation = [
+  {emoji:'🍞',en:'bread',cat:'need'},{emoji:'👟',en:'school shoes',cat:'need'},
+  {emoji:'💊',en:'medicine',cat:'need'},{emoji:'💧',en:'water',cat:'need'},
+  {emoji:'📚',en:'school book',cat:'need'},{emoji:'🎮',en:'video game',cat:'want'},
+  {emoji:'🍬',en:'candy',cat:'want'},{emoji:'🎈',en:'balloon',cat:'want'},
+  {emoji:'🧸',en:'toy',cat:'want'},{emoji:'🎧',en:'headphones',cat:'want'}
+];
+const sortChallenge = [
+  {emoji:'🧥',en:'Warm coat', context:'Yours is too small and winter is coming.', cat:'need', reason:'A coat that protects you from the cold is a need, especially when your old one no longer fits.'},
+  {emoji:'👟',en:'New trainers', context:'A third pair, just a different colour.', cat:'want', reason:'You already have trainers that work — this one is about style, not necessity.'},
+  {emoji:'🥪',en:'Packed lunch', context:'For a normal school day.', cat:'need', reason:'You need food to stay healthy and focused at school.'},
+  {emoji:'📱',en:'Phone upgrade', context:'Your current phone still works fine.', cat:'want', reason:'If the old one still works, a new model is a want, not a need.'},
+  {emoji:'🚌',en:'Bus fare', context:'To get to school and back.', cat:'need', reason:'Getting to school safely is essential — this is a need.'},
+  {emoji:'🎟️',en:'Concert ticket', context:'A birthday treat.', cat:'want', reason:'Entertainment and treats are wants, even on special occasions.'},
+  {emoji:'👓',en:'Prescription glasses', context:'The optician says you need them to see clearly.', cat:'need', reason:'Anything prescribed for your health is a need.'},
+  {emoji:'🍭',en:'Extra sweets', context:'For a sleepover with friends.', cat:'want', reason:'Sweets for fun are enjoyable, but not essential.'},
+  {emoji:'👕',en:'School uniform', context:'Your old one is torn and too small.', cat:'need', reason:'Uniform you must wear for school, replaced because it no longer works, is a need.'},
+  {emoji:'🕹️',en:'In-game currency', context:'For a video game you already own.', cat:'want', reason:'Extra spending inside a game for fun is a classic want.'}
+];
+let sortedCorrect = 0, sortedTotal = 0, sortItemsData = [];
+function buildSort(){
+  sortedCorrect = 0; sortedTotal = 0;
+  document.getElementById('needBin').innerHTML = '';
+  document.getElementById('wantBin').innerHTML = '';
+  document.getElementById('s2feedback').className = 'feedback-msg';
+  document.getElementById('s2next').disabled = true;
+  document.getElementById('s2instructions').innerHTML = difficulty==='challenge'
+    ? `Read each situation carefully. Is it really a <span class="target-vocab">need</span>, or is it a <span class="target-vocab">want</span>? You only get one choice per item, so think before you decide!`
+    : `Look at each item. Decide: is it a <span class="target-vocab">need</span> (something you must have) or a <span class="target-vocab">want</span> (something nice to have)?`;
+  sortItemsData = difficulty==='challenge' ? sortChallenge : sortFoundation;
+  const grid = document.getElementById('sortGrid');
+  grid.innerHTML = '';
+  sortItemsData.forEach((item,i)=>{
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    card.id = 'sitem'+i;
+    card.innerHTML = `
+      <span class="emoji">${item.emoji}</span>
+      <div class="label">${item.en}</div>
+      <div class="context">${item.context ? item.context : ''}</div>
+      <div class="btns">
+        <button class="btn-need" onclick="sortItem(${i},'need')">Need</button>
+        <button class="btn-want" onclick="sortItem(${i},'want')">Want</button>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+function sortItem(i, guess){
+  const item = sortItemsData[i];
+  const card = document.getElementById('sitem'+i);
+  if(card.classList.contains('gone')) return;
+  const fb = document.getElementById('s2feedback');
+  fb.classList.add('show');
+  const isCorrect = guess === item.cat;
+
+  if(difficulty === 'foundation'){
+    sortedTotal++;
+    if(isCorrect){
+      sortedCorrect++;
+      fb.className = 'feedback-msg show good';
+      fb.textContent = `✅ Correct! ${item.en} is a ${item.cat}.`;
+      card.classList.add('gone');
+      setTimeout(()=>{
+        document.getElementById(item.cat==='need'?'needBin':'wantBin').innerHTML += item.emoji + ' ';
+        checkSortDone();
+      },250);
+    } else {
+      fb.className = 'feedback-msg show bad';
+      fb.textContent = `❌ Try again! Think about whether ${item.en} is really a need.`;
+    }
+  } else {
+    // challenge: one attempt only
+    sortedTotal++;
+    if(isCorrect) sortedCorrect++;
+    fb.className = 'feedback-msg show ' + (isCorrect ? 'good' : 'bad');
+    fb.textContent = (isCorrect ? '✅ ' : '❌ ') + item.reason;
+    card.classList.add('gone');
+    setTimeout(()=>{
+      const bin = document.getElementById(guess==='need'?'needBin':'wantBin');
+      bin.innerHTML += `<span class="${isCorrect?'right':'wrong'}">${item.emoji}</span> `;
+      checkSortDone();
+    },300);
+  }
+}
+function checkSortDone(){
+  const remaining = document.querySelectorAll('#sortGrid .item-card:not(.gone)').length;
+  if(remaining === 0) document.getElementById('s2next').disabled = false;
+}
+
+/* ================= STAGE 3: BUDGET ================= */
+const budgetFoundation = {
+  amount: 20,
+  contextText: '',
+  items: [
+    {emoji:'🍞',en:'bread',price:3,cat:'need'},{emoji:'🍎',en:'fruit',price:4,cat:'need'},
+    {emoji:'✏️',en:'pencils',price:2,cat:'need'},{emoji:'📖',en:'storybook',price:5,cat:'want'},
+    {emoji:'🧸',en:'toy car',price:8,cat:'want'},{emoji:'🍬',en:'candy',price:2,cat:'want'},
+    {emoji:'🧃',en:'juice',price:3,cat:'want'},{emoji:'🎮',en:'video game',price:15,cat:'want'}
+  ],
+  reflection:false
+};
+const budgetChallenge = {
+  amount: 50,
+  contextText: "You're getting ready for a new school term. You need some basic supplies — but if there's money left, you can treat yourself. Watch out for discounts and think about the price per item!",
+  items: [
+    {emoji:'✏️',en:'Pencils (pack of 6)',price:6,cat:'need'},
+    {emoji:'✏️',en:'Pencil (single)',price:1.5,cat:'need'},
+    {emoji:'🧴',en:'Glue stick',price:3,cat:'need'},
+    {emoji:'🎒',en:'Backpack',price:15,was:20,discount:'25% off',cat:'need'},
+    {emoji:'🥪',en:'Lunch box',price:8,cat:'need'},
+    {emoji:'🚌',en:'Bus pass (1 week)',price:10,cat:'need'},
+    {emoji:'🃏',en:'Trading cards',price:4,cat:'want'},
+    {emoji:'🎮',en:'Handheld game',price:22,cat:'want'},
+    {emoji:'🍫',en:'Chocolate bar',price:2,cat:'want'},
+    {emoji:'📖',en:'Comic book',price:4.5,was:6,discount:'25% off',cat:'want'}
+  ],
+  reflection:true
+};
+let cart = [], budgetData = budgetFoundation, budgetStars = 0;
+function buildBudget(){
+  cart = [];
+  budgetData = difficulty==='challenge' ? budgetChallenge : budgetFoundation;
+  document.getElementById('budgetTotal').textContent = budgetData.amount;
+  document.getElementById('spentAmt').textContent = 0;
+  document.getElementById('leftAmt').textContent = budgetData.amount;
+  document.getElementById('meterFill').style.width = '0%';
+  document.getElementById('checkoutBtn').disabled = true;
+  document.getElementById('s3next').disabled = true;
+  document.getElementById('s3feedback').className = 'feedback-msg';
+  document.getElementById('s3instructions').innerHTML = difficulty==='challenge'
+    ? `You have a <span class="target-vocab">budget</span> of ${budgetData.amount} coins. Look at the <span class="target-vocab">price</span> and any <span class="target-vocab">discount</span> before you buy. Think about <span class="target-vocab">unit price</span> when items come in packs.`
+    : `You have a <span class="target-vocab">budget</span> of ${budgetData.amount} coins. Choose what to <span class="target-vocab">spend</span> your money on. Try to buy what you need, check the <span class="target-vocab">price</span> of each item, and see if you can <span class="target-vocab">save</span> a little too!`;
+  const ctx = document.getElementById('s3context');
+  if(budgetData.contextText){ ctx.style.display='block'; ctx.textContent = budgetData.contextText; }
+  else { ctx.style.display='none'; }
+  document.getElementById('reflectionBox').style.display = budgetData.reflection ? 'block' : 'none';
+  if(document.getElementById('reflectionText')) document.getElementById('reflectionText').value = '';
+
+  const grid = document.getElementById('shopGrid');
+  grid.innerHTML = '';
+  budgetData.items.forEach((item,i)=>{
+    const card = document.createElement('div');
+    card.className = 'shop-card';
+    card.id = 'shop'+i;
+    const priceLabel = item.was
+      ? `<span class="was">${item.was}</span> ${item.price} coins`
+      : `${item.price} coins`;
+    card.innerHTML = `
+      <span class="emoji">${item.emoji}</span>
+      <div class="label">${item.en}</div>
+      <div class="price">${priceLabel}</div>
+      ${item.discount ? `<span class="discount-tag">🔻 ${item.discount}</span>` : '<span class="discount-tag">&nbsp;</span>'}
+      <button onclick="addToCart(${i})">Add</button>`;
+    grid.appendChild(card);
+  });
+}
+function addToCart(i){
+  const item = budgetData.items[i];
+  const spent = cart.reduce((a,c)=>a+c.price,0);
+  if(spent + item.price > budgetData.amount){
+    const fb = document.getElementById('s3feedback');
+    fb.className='feedback-msg show bad';
+    fb.textContent = `❌ Not enough coins left to afford ${item.en}!`;
+    return;
+  }
+  cart.push(item);
+  updateWallet();
+  const card = document.getElementById('shop'+i);
+  card.classList.add('added');
+  const btn = card.querySelector('button');
+  btn.textContent = 'Added ✓'; btn.disabled = true;
+  document.getElementById('checkoutBtn').disabled = false;
+}
+function updateWallet(){
+  const spent = cart.reduce((a,c)=>a+c.price,0);
+  document.getElementById('spentAmt').textContent = spent % 1 === 0 ? spent : spent.toFixed(2);
+  const left = budgetData.amount - spent;
+  document.getElementById('leftAmt').textContent = left % 1 === 0 ? left : left.toFixed(2);
+  document.getElementById('meterFill').style.width = Math.min(100,(spent/budgetData.amount)*100) + '%';
+}
+function checkout(){
+  const spent = cart.reduce((a,c)=>a+c.price,0);
+  const needs = cart.filter(c=>c.cat==='need').length;
+  const wants = cart.filter(c=>c.cat==='want').length;
+  const left = budgetData.amount - spent;
+  const fb = document.getElementById('s3feedback');
+  fb.classList.add('show');
+  let stars = 0, msg = '';
+
+  if(difficulty === 'challenge'){
+    if(needs >= 4 && wants <= 2 && left >= 5){
+      stars = 3;
+      msg = `🎉 Excellent! You covered your core needs (${needs}), kept treats sensible (${wants}), and saved ${left.toFixed(2)} coins.`;
+    } else if(needs >= 3){
+      stars = 2;
+      msg = `👍 Good effort. You bought ${needs} needs and ${wants} wants, with ${left.toFixed(2)} coins left. Could you cover a few more essentials before treats?`;
+    } else {
+      stars = 1;
+      msg = `🤔 You only covered ${needs} need(s). A wise spender secures the essentials before spending on wants.`;
+    }
+  } else {
+    if(needs === 0){
+      stars = 1;
+      msg = "🤔 You didn't buy any needs. A wise spender thinks about needs first!";
+    } else if(left >= 2 && wants <= 2){
+      stars = 3;
+      msg = `🎉 Great budgeting! You bought ${needs} need(s), ${wants} want(s), and saved ${left} coins!`;
+    } else {
+      stars = 2;
+      msg = `👍 Good try! You bought ${needs} need(s) and ${wants} want(s), with ${left} coins left. Could you save a little more next time?`;
+    }
+  }
+  budgetStars = stars;
+  fb.className = 'feedback-msg show ' + (stars>=2 ? 'good' : 'bad');
+  fb.textContent = msg;
+  document.getElementById('checkoutBtn').disabled = true;
+  document.getElementById('s3next').disabled = false;
+}
+
+/* ================= STAGE 4: VALUE FOR MONEY ================= */
+const vfmFoundation = [
+  {q:'Which juice is better value for money?',
+   options:[{key:'a',emoji:'🧃',desc:'Small juice: 2 coins for 200ml'},{key:'b',emoji:'🧃',desc:'Big juice: 3 coins for 500ml'}],
+   correct:'b', explain:'The big juice costs a little more, but you get much more juice for each coin — that is better value for money!'},
+  {q:'Which toy is better value for money?',
+   options:[{key:'a',emoji:'🧸',desc:'Cheap toy: 5 coins, breaks in a week'},{key:'b',emoji:'🧸',desc:'Quality toy: 10 coins, lasts a whole year'}],
+   correct:'b', explain:'The quality toy costs more, but lasts much longer. A wise spender compares how long things last, not just the price.'},
+  {q:'Which is better value for money?',
+   options:[{key:'a',emoji:'🍪',desc:'1 cookie for 1 coin'},{key:'b',emoji:'🍪',desc:'Box of 10 cookies for 6 coins'}],
+   correct:'b', explain:'The box works out to about 0.6 coins per cookie, cheaper than buying just one — that is better value!'},
+  {q:'Which is better value for money?',
+   options:[{key:'a',emoji:'✏️',desc:'1 pencil for 1.5 coins'},{key:'b',emoji:'✏️',desc:'Pack of 5 pencils for 5 coins'}],
+   correct:'b', explain:'The pack costs 1 coin per pencil, cheaper than 1.5 coins for a single pencil.'}
+];
+const vfmChallenge = [
+  {q:'Work out the price per 100ml. Which is the best value for money?',
+   options:[
+     {key:'a',emoji:'🧃',desc:'500ml for 4 coins (0.8 coins/100ml)'},
+     {key:'b',emoji:'🧃',desc:'750ml for 6 coins (0.8 coins/100ml)'},
+     {key:'c',emoji:'🧃',desc:'1000ml for 7 coins (0.7 coins/100ml)'}
+   ],
+   correct:'c', explain:'A and B cost the same per 100ml (0.8 coins). The 1 litre bottle works out cheaper per 100ml (0.7 coins) — it is the best value.'},
+  {q:'Work out the price per 100g. Which cereal is the best value?',
+   options:[
+     {key:'a',emoji:'🥣',desc:'200g for 2 coins (1.0 coin/100g)'},
+     {key:'b',emoji:'🥣',desc:'500g for 4.5 coins (0.9 coin/100g)'},
+     {key:'c',emoji:'🥣',desc:'1kg for 8 coins (0.8 coin/100g)'}
+   ],
+   correct:'c', explain:'The 1kg box has the lowest price per 100g (0.8 coins), so it is the best value — as long as you will actually eat it all before it goes stale!'},
+  {q:'Think about cost over time. Which trainers are better value?',
+   options:[
+     {key:'a',emoji:'👟',desc:'Pair A: 20 coins, lasts 6 months (≈3.3 coins/month)'},
+     {key:'b',emoji:'👟',desc:'Pair B: 35 coins, lasts 12 months (≈2.9 coins/month)'}
+   ],
+   correct:'b', explain:'Pair B costs more upfront, but lasts twice as long, so the cost per month is actually lower — better value over time.'},
+  {q:'Which pen option is the best value for money — and is it the best choice?',
+   options:[
+     {key:'a',emoji:'🖊️',desc:'1 pen for 1.5 coins (1.5 coins/pen)'},
+     {key:'b',emoji:'🖊️',desc:'Pack of 4 for 5 coins (1.25 coins/pen)'},
+     {key:'c',emoji:'🖊️',desc:'Pack of 10 for 11 coins (1.1 coins/pen)'}
+   ],
+   correct:'c', explain:'The pack of 10 has the lowest price per pen, so it is technically the best value. But if you only need 2 pens, buying 10 might waste money — the best value is not always the best choice!'}
+];
+let vfmAnswered = 0, vfmCorrect = 0, vfmData = [];
+function buildVfm(){
+  vfmAnswered = 0; vfmCorrect = 0;
+  document.getElementById('s4next').disabled = true;
+  vfmData = difficulty==='challenge' ? vfmChallenge : vfmFoundation;
+  const container = document.getElementById('vfmContainer');
+  container.innerHTML = '';
+  vfmData.forEach((q,i)=>{
+    const block = document.createElement('div');
+    block.className = 'vfm-q';
+    const optsHtml = q.options.map(o=>`
+      <div class="vfm-opt" id="vfm${i}${o.key}" onclick="answerVfm(${i},'${o.key}')">
+        <span class="emoji">${o.emoji}</span>
+        <div class="desc">${o.desc}</div>
+      </div>`).join('');
+    block.innerHTML = `
+      <div class="qtitle">${i+1}. ${q.q}</div>
+      <div class="vfm-options">${optsHtml}</div>
+      <div class="vfm-explain" id="vfmExplain${i}">💡 ${q.explain}</div>`;
+    container.appendChild(block);
+  });
+}
+function answerVfm(i, choice){
+  const q = vfmData[i];
+  const firstOpt = document.getElementById('vfm'+i+q.options[0].key);
+  if(firstOpt.classList.contains('correct') || firstOpt.classList.contains('wrong')){
+    // check if any already answered (lock after first answer)
+  }
+  const anyAnswered = q.options.some(o=>{
+    const el = document.getElementById('vfm'+i+o.key);
+    return el.classList.contains('correct') || el.classList.contains('wrong');
+  });
+  if(anyAnswered) return;
+  q.options.forEach(o=>{
+    const el = document.getElementById('vfm'+i+o.key);
+    if(o.key === q.correct) el.classList.add('correct');
+    else if(o.key === choice) el.classList.add('wrong');
+  });
+  if(choice === q.correct) vfmCorrect++;
+  document.getElementById('vfmExplain'+i).classList.add('show');
+  vfmAnswered++;
+  if(vfmAnswered === vfmData.length) document.getElementById('s4next').disabled = false;
+}
+
+/* ================= CERTIFICATE ================= */
+function starString(n, max){
+  let s='';
+  for(let i=0;i<max;i++) s += i<n ? '<span class="lit">★</span>' : '★';
+  return s;
+}
+function buildCertificate(){
+  const vocabList = difficulty==='challenge' ? vocabBase.concat(vocabChallengeExtra) : vocabBase;
+  const vocabStars = learnedCount === vocabList.length ? 3 : (learnedCount >= vocabList.length*0.6 ? 2 : 1);
+  const sortStars = sortedTotal>0 && sortedCorrect===sortedTotal ? 3 : (sortedCorrect >= sortedTotal*0.6 ? 2 : 1);
+  const vfmStars = Math.max(1, Math.round((vfmCorrect/vfmData.length)*3));
+  const total = vocabStars + sortStars + budgetStars + vfmStars;
+  document.getElementById('certRow').innerHTML = `
+    <div class="cert-item">📖 Words<div class="stars">${starString(vocabStars,3)}</div></div>
+    <div class="cert-item">🧺 Sorting<div class="stars">${starString(sortStars,3)}</div></div>
+    <div class="cert-item">💰 Budget<div class="stars">${starString(budgetStars,3)}</div></div>
+    <div class="cert-item">🧾 Value<div class="stars">${starString(vfmStars,3)}</div></div>`;
+  let badge = 'Bronze Spender 🥉';
+  if(total >= 11) badge = 'Gold Smart Spender 🥇';
+  else if(total >= 8) badge = 'Silver Smart Spender 🥈';
+  if(difficulty==='challenge') badge += ' (Challenge)';
+  document.getElementById('certBadge').textContent = badge;
+}
+
+renderProgress();
+</script>
+</body>
+</html>
